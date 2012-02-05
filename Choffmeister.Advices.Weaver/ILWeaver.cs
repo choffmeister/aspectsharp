@@ -30,15 +30,12 @@ namespace Choffmeister.Advices.Weaver
         {
             AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(inputStream);
 
-            TypeDefinition weaveAttributeType = assembly.ImportType(typeof(AdviceAttribute));
-            TypeDefinition paraCollType = assembly.ImportType(typeof(ParameterCollection));
-            MethodReference paraCollCtor = assembly.ImportDefaultConstructor(paraCollType);
-            MethodReference paraCollAddMethod = assembly.ImportMethod(paraCollType, "Add");
+            TypeReference adviceAttributeType = assembly.MainModule.Import(typeof(AdviceAttribute));
 
             var markedMethods = assembly.MainModule.Types
                 .SelectMany(n => n.Methods)
                 .SelectMany(n => n.CustomAttributes, (m, a) => new { Method = m, Attribute = a })
-                .Where(n => n.Attribute.AttributeType.IsSubClassOf(weaveAttributeType))
+                .Where(n => n.Attribute.AttributeType.IsSubClassOf(adviceAttributeType))
                 .ToList();
 
             foreach (var markedMethod in markedMethods)
@@ -46,6 +43,11 @@ namespace Choffmeister.Advices.Weaver
                 MethodDefinition method = markedMethod.Method;
                 CustomAttribute attribute = markedMethod.Attribute;
                 TypeDefinition type = method.DeclaringType;
+
+                TypeReference paraCollType = method.Module.Import(typeof(ParameterCollection));
+                MethodReference paraCollCtor = method.Module.Import(paraCollType.Resolve().Methods.Single(n => n.Name == ".ctor" && n.Parameters.Count == 0));
+                MethodReference paraCollAddMethod = method.Module.Import(paraCollType.Resolve().Methods.Single(n => n.Name == "Add"));
+                MethodReference executeMethod = method.Module.Import(adviceAttributeType.Resolve().Methods.Single(n => n.Name == "Execute"));
 
                 method.Body.SimplifyMacros();
 
@@ -63,8 +65,7 @@ namespace Choffmeister.Advices.Weaver
                 Instruction ret = method.Body.Instructions.First();
 
                 // instantiate parameter collection
-                // TODO: check why we have to reimport here
-                VariableDefinition paraCollVariable = new VariableDefinition(method.Module.Import(paraCollType));
+                VariableDefinition paraCollVariable = new VariableDefinition(paraCollType);
                 method.Body.Variables.Add(paraCollVariable);
                 processor.InsertBefore(ret, Instruction.Create(OpCodes.Newobj, paraCollCtor));
                 processor.InsertBefore(ret, Instruction.Create(OpCodes.Stloc, paraCollVariable));
@@ -100,7 +101,7 @@ namespace Choffmeister.Advices.Weaver
                 processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldloc, instantiate.Item2));
                 processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldloc, delegateVariable));
                 processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldloc, paraCollVariable));
-                processor.InsertBefore(ret, Instruction.Create(OpCodes.Callvirt, attribute.AttributeType.Resolve().Methods.Single(n => n.Name == "Execute")));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Callvirt, executeMethod));
 
                 // if method has no return value, pop the return value from advice invoke
                 if (method.ReturnType == method.Module.TypeSystem.Void)
