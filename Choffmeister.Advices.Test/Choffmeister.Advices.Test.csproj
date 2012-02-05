@@ -59,7 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnnotatedClass.cs" />
-    <Compile Include="ByPassAdviceAttribute.cs" />
+    <Compile Include="SkipAdviceAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TraceAdviceAttribute.cs" />

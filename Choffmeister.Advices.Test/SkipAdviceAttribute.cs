@@ -2,7 +2,7 @@
 
 namespace Choffmeister.Advices.Test
 {
-    public sealed class ByPassAdviceAttribute : AdviceAttribute
+    public sealed class SkipAdviceAttribute : AdviceAttribute
     {
         public override object Execute(MulticastDelegate dele, ParameterCollection parameters)
         {
