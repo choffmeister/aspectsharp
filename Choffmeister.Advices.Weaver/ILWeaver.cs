@@ -100,11 +100,15 @@ namespace Choffmeister.Advices.Weaver
                 processor.InsertBefore(first, Instruction.Create(OpCodes.Newobj, delegateCtor));
                 processor.InsertBefore(first, Instruction.Create(OpCodes.Stloc, delegateVariable));
 
-                // invokde advice
+                // invoke advice
                 processor.InsertBefore(first, Instruction.Create(OpCodes.Ldloc, instantiate.Item2));
                 processor.InsertBefore(first, Instruction.Create(OpCodes.Ldloc, delegateVariable));
                 processor.InsertBefore(first, Instruction.Create(OpCodes.Ldloc, paraCollVariable));
                 processor.InsertBefore(first, Instruction.Create(OpCodes.Callvirt, attribute.AttributeType.Resolve().Methods.Single(n => n.Name == "Execute")));
+
+                // if method has no return value, pop the return value from advice invoke
+                if (method.ReturnType == method.Module.TypeSystem.Void)
+                    processor.InsertBefore(first, Instruction.Create(OpCodes.Pop));
 
                 method.Body.OptimizeMacros();
                 method.CustomAttributes.Remove(attribute);
@@ -117,14 +121,10 @@ namespace Choffmeister.Advices.Weaver
         {
             TypeDefinition attributeType = attribute.AttributeType.Resolve();
             MethodDefinition attributeCtor = attributeType.Methods
+                .Where(n => n.Name == ".ctor")
+                .Where(n => n.Parameters.Count == attribute.ConstructorArguments.Count)
                 .Single(n =>
                 {
-                    if (n.Name != ".ctor")
-                        return false;
-
-                    if (n.Parameters.Count != attribute.ConstructorArguments.Count)
-                        return false;
-
                     for (int i = 0; i < attribute.ConstructorArguments.Count; i++)
                     {
                         if (attribute.ConstructorArguments[i].Type != n.Parameters[i].ParameterType)

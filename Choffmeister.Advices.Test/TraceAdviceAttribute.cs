@@ -28,21 +28,30 @@ namespace Choffmeister.Advices.Test
 
         public override object Execute(MulticastDelegate dele, ParameterCollection parameters)
         {
-            Console.WriteLine(">>>>>> INTERCEPT");
-
+            Console.ForegroundColor = ConsoleColor.Green;
+            
             Console.WriteLine("Prefix: {0}", _prefix);
             Console.WriteLine("Suffix: {0}", _suffix);
             Console.WriteLine("Name: {0}", this.Name);
 
             Console.WriteLine("Intercepted {0}::{1}", dele.Target.GetType().FullName, dele.Method.Name);
-            Console.WriteLine("Args:");
 
-            foreach (KeyValuePair<string, object> kvp in parameters.Dictionary)
+            if (parameters.Dictionary.Count > 0)
             {
-                Console.WriteLine("  {0} -> {1}", kvp.Key, kvp.Value);
+                Console.WriteLine("Args:");
+
+                foreach (KeyValuePair<string, object> kvp in parameters.Dictionary)
+                {
+                    Console.WriteLine("  {0} -> {1}", kvp.Key, kvp.Value);
+                }
             }
 
+            Console.ResetColor();
+
+            // invoke the intercepted method
             object result = dele.DynamicInvoke(parameters.AllParameterValues);
+
+            Console.ForegroundColor = ConsoleColor.Green;
 
             if (dele.Method.ReturnType != typeof(void))
             {
@@ -50,7 +59,7 @@ namespace Choffmeister.Advices.Test
                 Console.WriteLine("  {0}", result);
             }
 
-            Console.WriteLine("<<<<<< INTERCEPT");
+            Console.ResetColor();
 
             return result;
         }
