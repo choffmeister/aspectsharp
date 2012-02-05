@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -87,6 +88,25 @@ namespace Choffmeister.Advices.Weaver
                 return true;
 
             return IsSubClassOf(type.Resolve().BaseType, baseType);
+        }
+
+        public static MethodDefinition GetMethodDefinition(this TypeReference type, Func<MethodDefinition, bool> methodSelector)
+        {
+            TypeDefinition typeResolved = type.Resolve();
+            MethodDefinition setMethod = typeResolved.Methods.SingleOrDefault(methodSelector);
+
+            if (setMethod != null)
+            {
+                return setMethod;
+            }
+            else if (typeResolved.BaseType == null)
+            {
+                return null;
+            }
+            else
+            {
+                return GetMethodDefinition(typeResolved.BaseType, methodSelector);
+            }
         }
     }
 }

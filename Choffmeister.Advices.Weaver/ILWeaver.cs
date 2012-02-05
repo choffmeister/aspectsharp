@@ -38,7 +38,10 @@ namespace Choffmeister.Advices.Weaver
                 .SelectMany(n => n.Methods)
                 .SelectMany(n => n.CustomAttributes, (m, a) => new { Method = m, Attribute = a })
                 .Where(n => n.Attribute.AttributeType.IsSubClassOf(adviceAttributeType))
+                .OrderByDescending(n => n.Attribute.Properties.Count(m => m.Name == "Order") == 1 ? (int)n.Attribute.Properties.SingleOrDefault(m => m.Name == "Order").Argument.Value : 0)
                 .ToList();
+
+            markedMethods.Reverse();
 
             foreach (var markedMethod in markedMethods)
             {
@@ -85,7 +88,7 @@ namespace Choffmeister.Advices.Weaver
                 }
 
                 // instantiate attribute
-                Tuple<List<Instruction>, VariableDefinition> instantiate = CreateInstantiateAttribute(attribute);
+                Tuple<List<Instruction>, VariableDefinition> instantiate = CreateInstantiateAttribute(method.Module, attribute);
                 instantiate.Item1.ForEach(n => processor.InsertBefore(ret, n));
                 method.Body.Variables.Add(instantiate.Item2);
 
@@ -116,7 +119,7 @@ namespace Choffmeister.Advices.Weaver
             return assembly;
         }
 
-        private Tuple<List<Instruction>, VariableDefinition> CreateInstantiateAttribute(CustomAttribute attribute)
+        private Tuple<List<Instruction>, VariableDefinition> CreateInstantiateAttribute(ModuleDefinition module, CustomAttribute attribute)
         {
             TypeDefinition attributeType = attribute.AttributeType.Resolve();
             MethodDefinition attributeCtor = attributeType.Methods
@@ -145,7 +148,7 @@ namespace Choffmeister.Advices.Weaver
             // set properties
             foreach (var prop in attribute.Properties)
             {
-                MethodDefinition setMethod = attributeType.Methods.Single(n => n.Name == "set_" + prop.Name);
+                MethodReference setMethod = module.Import(attributeType.GetMethodDefinition(n => n.Name == "set_" + prop.Name));
 
                 instructions.Add(Instruction.Create(OpCodes.Ldloc, attributeLoc));
                 instructions.Add(prop.Argument.Type.CreateLoadConstantInstruction(prop.Argument.Value));
