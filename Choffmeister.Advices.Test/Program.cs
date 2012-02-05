@@ -23,6 +23,7 @@ namespace Choffmeister.Advices.Test
         }
     }
 
+    // TODO: advice anotation does not work at this special class by an yet unknown reason...
     public class CurrentAssemblyWeaver
     {
         public void WeaveCurrentAssembly()
