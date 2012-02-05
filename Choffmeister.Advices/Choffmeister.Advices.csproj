@@ -47,6 +47,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AdviceAttribute.cs" />
+    <Compile Include="BeforeAdviceAttribute.cs" />
+    <Compile Include="AfterAdviceAttribute.cs" />
+    <Compile Include="CatchAdviceAttribute.cs" />
     <Compile Include="ParameterCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -71,6 +74,9 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
