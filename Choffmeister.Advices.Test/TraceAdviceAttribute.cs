@@ -15,6 +15,11 @@ namespace Choffmeister.Advices.Test
         {
         }
 
+        public TraceAdviceAttribute(sbyte _sbyte, byte _byte, short _short, ushort _ushort, int _int, uint _uint, long _long, ulong _ulong, float _float, double _double, char _char, bool _bool, string _string)
+        {
+            Console.WriteLine("Check constants: {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12}", _sbyte, _byte, _short, _ushort, _int, _uint, _long, _ulong, _float, _double, _char, _bool, _string);
+        }
+
         public TraceAdviceAttribute(string prefix)
             : this(prefix, null)
         {
@@ -29,7 +34,7 @@ namespace Choffmeister.Advices.Test
         public override object Execute(MulticastDelegate dele, ParameterCollection parameters)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            
+
             Console.WriteLine("Prefix: {0}", _prefix);
             Console.WriteLine("Suffix: {0}", _suffix);
             Console.WriteLine("Name: {0}", this.Name);

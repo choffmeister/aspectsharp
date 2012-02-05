@@ -1,25 +1,31 @@
 ﻿using System;
-using Choffmeister.Advices.Weaver;
-using System.Reflection;
 using System.IO;
+using System.Reflection;
+using Choffmeister.Advices.Weaver;
+
 namespace Choffmeister.Advices.Test
 {
     internal class Program
     {
         private static void Main(string[] args)
         {
-            WeaveCurrentAssembly();
+            CurrentAssemblyWeaver weaver = new CurrentAssemblyWeaver();
+            weaver.WeaveCurrentAssembly();
 
             AnnotatedClass c1 = new AnnotatedClass();
-            c1.Void();
+            c1.Void1();
+            c1.Void2();
             c1.Foo("hi", 23, DateTime.Now);
             c1.Bar("Tom");
             c1.Number = 23;
 
             Console.ReadKey();
         }
+    }
 
-        private static void WeaveCurrentAssembly()
+    public class CurrentAssemblyWeaver
+    {
+        public void WeaveCurrentAssembly()
         {
             string currentAssemblyPath = Assembly.GetEntryAssembly().Location;
             string currentDirectory = Path.GetDirectoryName(currentAssemblyPath);
@@ -29,7 +35,7 @@ namespace Choffmeister.Advices.Test
             {
                 return;
             }
-            
+
             using (Stream inputStream = Assembly.GetEntryAssembly().GetFile("Choffmeister.Advices.Test.exe"))
             {
                 using (Stream outputStream = File.Open(weavedAssemblyPath, FileMode.Create))

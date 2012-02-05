@@ -12,8 +12,15 @@ namespace Choffmeister.Advices.Test
         }
 
         [TraceAdvice("Pre-A")]
-        public void Void()
+        public void Void1()
         {
+            Console.WriteLine("Void1");
+        }
+
+        [TraceAdvice(127, 255, 32767, 65535, 2147483647, 4294967295, 9223372036854775807, 18446744073709551615, 12.3f, 26.6, 'A', true, "foo")]
+        public void Void2()
+        {
+            Console.WriteLine("Void2");
         }
 
         [TraceAdvice("Pre-B", "Post-B")]

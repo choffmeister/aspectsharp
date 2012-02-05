@@ -38,7 +38,7 @@ namespace Choffmeister.Advices.Weaver
             var markedMethods = assembly.MainModule.Types
                 .SelectMany(n => n.Methods)
                 .SelectMany(n => n.CustomAttributes, (m, a) => new { Method = m, Attribute = a })
-                .Where(n => IsSubClass(n.Attribute.AttributeType, weaveAttributeType))
+                .Where(n => n.Attribute.AttributeType.IsSubClassOf(weaveAttributeType))
                 .ToList();
 
             foreach (var markedMethod in markedMethods)
@@ -46,10 +46,6 @@ namespace Choffmeister.Advices.Weaver
                 MethodDefinition method = markedMethod.Method;
                 CustomAttribute attribute = markedMethod.Attribute;
                 TypeDefinition type = method.DeclaringType;
-
-                ILProcessor processor = method.Body.GetILProcessor();
-                Instruction first;
-                Instruction last;
 
                 method.Body.SimplifyMacros();
 
@@ -60,34 +56,34 @@ namespace Choffmeister.Advices.Weaver
                 method.Body.Instructions.ToList().ForEach(n => interceptedMethod.Body.Instructions.Add(n));
                 method.Body.Instructions.Clear();
                 method.Body.Variables.Clear();
-
                 method.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
                 type.Methods.Add(interceptedMethod);
 
-                GetFirstAndLastInstructions(method.Body, out first, out last);
+                ILProcessor processor = method.Body.GetILProcessor();
+                Instruction ret = method.Body.Instructions.First();
 
                 // instantiate parameter collection
                 // TODO: check why we have to reimport here
                 VariableDefinition paraCollVariable = new VariableDefinition(method.Module.Import(paraCollType));
                 method.Body.Variables.Add(paraCollVariable);
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Newobj, paraCollCtor));
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Stloc, paraCollVariable));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Newobj, paraCollCtor));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Stloc, paraCollVariable));
 
                 // fill parameter collection
                 foreach (var p in method.Parameters)
                 {
-                    processor.InsertBefore(first, Instruction.Create(OpCodes.Ldloc, paraCollVariable));
-                    processor.InsertBefore(first, Instruction.Create(OpCodes.Ldstr, p.Name));
-                    processor.InsertBefore(first, Instruction.Create(OpCodes.Ldarg, p));
+                    processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldloc, paraCollVariable));
+                    processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldstr, p.Name));
+                    processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldarg, p));
                     if (p.ParameterType.IsValueType)
-                        processor.InsertBefore(first, Instruction.Create(OpCodes.Box, p.ParameterType));
+                        processor.InsertBefore(ret, Instruction.Create(OpCodes.Box, p.ParameterType));
 
-                    processor.InsertBefore(first, Instruction.Create(OpCodes.Callvirt, paraCollAddMethod));
+                    processor.InsertBefore(ret, Instruction.Create(OpCodes.Callvirt, paraCollAddMethod));
                 }
 
                 // instantiate attribute
                 Tuple<List<Instruction>, VariableDefinition> instantiate = CreateInstantiateAttribute(attribute);
-                instantiate.Item1.ForEach(n => processor.InsertBefore(first, n));
+                instantiate.Item1.ForEach(n => processor.InsertBefore(ret, n));
                 method.Body.Variables.Add(instantiate.Item2);
 
                 // create delegate
@@ -95,20 +91,20 @@ namespace Choffmeister.Advices.Weaver
                 MethodDefinition delegateCtor;
                 MethodDefinition invoke;
                 EmitCreateDelegateToLocalMethod(method.Module, processor, method.DeclaringType, method, out delegateVariable, out delegateCtor, out invoke);
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Ldloc, instantiate.Item2));
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Ldftn, interceptedMethod));
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Newobj, delegateCtor));
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Stloc, delegateVariable));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldloc, instantiate.Item2));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldftn, interceptedMethod));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Newobj, delegateCtor));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Stloc, delegateVariable));
 
                 // invoke advice
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Ldloc, instantiate.Item2));
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Ldloc, delegateVariable));
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Ldloc, paraCollVariable));
-                processor.InsertBefore(first, Instruction.Create(OpCodes.Callvirt, attribute.AttributeType.Resolve().Methods.Single(n => n.Name == "Execute")));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldloc, instantiate.Item2));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldloc, delegateVariable));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Ldloc, paraCollVariable));
+                processor.InsertBefore(ret, Instruction.Create(OpCodes.Callvirt, attribute.AttributeType.Resolve().Methods.Single(n => n.Name == "Execute")));
 
                 // if method has no return value, pop the return value from advice invoke
                 if (method.ReturnType == method.Module.TypeSystem.Void)
-                    processor.InsertBefore(first, Instruction.Create(OpCodes.Pop));
+                    processor.InsertBefore(ret, Instruction.Create(OpCodes.Pop));
 
                 method.Body.OptimizeMacros();
                 method.CustomAttributes.Remove(attribute);
@@ -136,7 +132,7 @@ namespace Choffmeister.Advices.Weaver
 
             // instantiate attribute
             List<Instruction> instructions = new List<Instruction>();
-            instructions.AddRange(attribute.ConstructorArguments.Select(n => CreatePushArgument(n.Type, n.Value)));
+            instructions.AddRange(attribute.ConstructorArguments.Select(n => n.Type.CreateLoadConstantInstruction(n.Value)));
             instructions.Add(Instruction.Create(OpCodes.Newobj, attributeCtor));
 
             // store attribute
@@ -149,7 +145,7 @@ namespace Choffmeister.Advices.Weaver
                 MethodDefinition setMethod = attributeType.Methods.Single(n => n.Name == "set_" + prop.Name);
 
                 instructions.Add(Instruction.Create(OpCodes.Ldloc, attributeLoc));
-                instructions.Add(CreatePushArgument(prop.Argument.Type, prop.Argument.Value));
+                instructions.Add(prop.Argument.Type.CreateLoadConstantInstruction(prop.Argument.Value));
                 instructions.Add(Instruction.Create(OpCodes.Callvirt, setMethod));
             }
 
@@ -211,40 +207,6 @@ namespace Choffmeister.Advices.Weaver
             ctor = constructor;
             dlg = newdlg;
             invok = invoke;
-        }
-
-        private void GetFirstAndLastInstructions(MethodBody body, out Instruction first, out Instruction last)
-        {
-            first = body.Instructions.First();
-            last = body.Instructions.Last();
-            while (last.OpCode != OpCodes.Ret) last = last.Previous;
-        }
-
-        // TODO: map all types
-        private Instruction CreatePushArgument(TypeReference type, object value)
-        {
-            switch (type.FullName)
-            {
-                case "System.String":
-                    return Instruction.Create(OpCodes.Ldstr, (string)value);
-                case "System.Int32":
-                    return Instruction.Create(OpCodes.Ldc_I4, (int)value);
-                case "System.Int64":
-                    return Instruction.Create(OpCodes.Ldc_I8, (long)value);
-                default:
-                    throw new NotSupportedException(string.Format("Type '{0}' is not supported by Choffmeister.AopWeaving", type.FullName));
-            }
-        }
-
-        private bool IsSubClass(TypeReference type, TypeReference baseType)
-        {
-            if (type == null)
-                return false;
-
-            if (type.FullName == baseType.FullName)
-                return true;
-
-            return IsSubClass(type.Resolve().BaseType, baseType);
         }
     }
 }
