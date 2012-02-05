@@ -50,7 +50,7 @@ namespace Choffmeister.Advices.Weaver
                 method.Body.SimplifyMacros();
 
                 // clone method to __xxx method and override xxx with empty method
-                MethodDefinition interceptedMethod = new MethodDefinition("__" + method.Name, method.Attributes, method.ReturnType);
+                MethodDefinition interceptedMethod = new MethodDefinition("__" + method.Name + "_Intercepted" + type.NestedTypes.Count, method.Attributes, method.ReturnType);
                 method.Parameters.ToList().ForEach(n => interceptedMethod.Parameters.Add(n));
                 method.Body.Variables.ToList().ForEach(n => interceptedMethod.Body.Variables.Add(n));
                 method.Body.Instructions.ToList().ForEach(n => interceptedMethod.Body.Instructions.Add(n));
