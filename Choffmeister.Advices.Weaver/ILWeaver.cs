@@ -10,25 +10,27 @@ namespace Choffmeister.Advices.Weaver
 {
     public class ILWeaver
     {
-        public void Weave(Stream inputStream, Stream outputStream)
+        public void Weave(Stream inputStream, Stream outputStream, string[] assemblyDirectories)
         {
-            this.Weave(inputStream).Write(outputStream);
+            this.Weave(inputStream, assemblyDirectories).Write(outputStream);
         }
 
-        public void Weave(string inputFilePath, string outputFilePath)
+        public void Weave(string inputFilePath, string outputFilePath, string[] assemblyDirectories)
         {
             using (FileStream inputStream = File.Open(inputFilePath, FileMode.Open, FileAccess.Read))
             {
                 using (FileStream outputStream = File.Open(outputFilePath, FileMode.Create))
                 {
-                    this.Weave(inputStream).Write(outputStream);
+                    this.Weave(inputStream, assemblyDirectories).Write(outputStream);
                 }
             }
         }
 
-        public AssemblyDefinition Weave(Stream inputStream)
+        public AssemblyDefinition Weave(Stream inputStream, string[] assemblyDirectories)
         {
             AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(inputStream);
+            DefaultAssemblyResolver resolver = (DefaultAssemblyResolver)assembly.MainModule.AssemblyResolver;
+            assemblyDirectories.ToList().ForEach(n => resolver.AddSearchDirectory(n));
 
             TypeReference adviceAttributeType = assembly.MainModule.Import(typeof(AdviceAttribute));
 

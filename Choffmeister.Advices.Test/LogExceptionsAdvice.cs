@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Choffmeister.Advices.Test
 {
@@ -13,6 +10,8 @@ namespace Choffmeister.Advices.Test
             Console.BackgroundColor = ConsoleColor.Red;
 
             Console.WriteLine(exception.Message);
+
+            Console.ResetColor();
 
             throw exception;
         }

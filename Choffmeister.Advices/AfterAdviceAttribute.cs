@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Choffmeister.Advices
 {
@@ -14,7 +11,6 @@ namespace Choffmeister.Advices
             object result = dele.DynamicInvoke(parameters.AllParameterValues);
 
             return this.ExecuteAfter(result, parameters);
-
         }
     }
 }
