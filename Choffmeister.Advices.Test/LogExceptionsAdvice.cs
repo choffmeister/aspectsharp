@@ -2,18 +2,25 @@
 
 namespace Choffmeister.Advices.Test
 {
-    public class LogExceptionsAdvice : CatchAdviceAttribute
+    public class LogExceptionsAdvice : AdviceAttribute
     {
-        public override object ExecuteOnException(Exception exception, ParameterCollection parameters)
+        public override object Execute(MulticastDelegate dele, ParameterCollection parameters)
         {
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.BackgroundColor = ConsoleColor.Red;
+            try
+            {
+                return dele.DynamicInvoke(parameters.AllParameterValues);
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.BackgroundColor = ConsoleColor.Red;
 
-            Console.WriteLine(exception.Message);
+                Console.WriteLine(ex.Message);
 
-            Console.ResetColor();
+                Console.ResetColor();
 
-            throw exception;
+                throw;
+            }
         }
     }
 }
