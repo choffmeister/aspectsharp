@@ -10,23 +10,23 @@ namespace Choffmeister.Advices.Weaver
 {
     public class ILWeaver
     {
-        public void Weave(Stream inputStream, Stream outputStream, string[] assemblyDirectories)
+        public void Weave(Stream inputStream, Stream outputStream, string[] assemblyDirectories, bool optimize = true)
         {
-            this.Weave(inputStream, assemblyDirectories).Write(outputStream);
+            this.Weave(inputStream, assemblyDirectories, optimize).Write(outputStream);
         }
 
-        public void Weave(string inputFilePath, string outputFilePath, string[] assemblyDirectories)
+        public void Weave(string inputFilePath, string outputFilePath, string[] assemblyDirectories, bool optimize = true)
         {
             using (FileStream inputStream = File.Open(inputFilePath, FileMode.Open, FileAccess.Read))
             {
                 using (FileStream outputStream = File.Open(outputFilePath, FileMode.Create))
                 {
-                    this.Weave(inputStream, assemblyDirectories).Write(outputStream);
+                    this.Weave(inputStream, assemblyDirectories, optimize).Write(outputStream);
                 }
             }
         }
 
-        public AssemblyDefinition Weave(Stream inputStream, string[] assemblyDirectories)
+        public AssemblyDefinition Weave(Stream inputStream, string[] assemblyDirectories, bool optimize = true)
         {
             AssemblyDefinition assembly = AssemblyDefinition.ReadAssembly(inputStream);
             DefaultAssemblyResolver resolver = (DefaultAssemblyResolver)assembly.MainModule.AssemblyResolver;
@@ -57,7 +57,8 @@ namespace Choffmeister.Advices.Weaver
                 MethodReference paraCollAddMethod = method.Module.Import(paraCollType.Resolve().Methods.Single(n => n.Name == "Add"));
                 MethodReference executeMethod = method.Module.Import(adviceAttributeType.Resolve().Methods.Single(n => n.Name == "Execute"));
 
-                method.Body.SimplifyMacros();
+                if (optimize)
+                    method.Body.SimplifyMacros();
 
                 // clone method to __xxx method and override xxx with empty method
                 MethodDefinition interceptedMethod = new MethodDefinition("__" + method.Name + "_Intercepted" + type.NestedTypes.Count, method.Attributes, method.ReturnType);
@@ -115,7 +116,9 @@ namespace Choffmeister.Advices.Weaver
                 if (method.ReturnType == method.Module.TypeSystem.Void)
                     processor.InsertBefore(ret, Instruction.Create(OpCodes.Pop));
 
-                method.Body.OptimizeMacros();
+                if (optimize)
+                    method.Body.OptimizeMacros();
+
                 method.CustomAttributes.Remove(attribute);
             }
 

@@ -13,6 +13,8 @@ namespace Choffmeister.Advices.Weaver
 
         public string AssemblyDirectories { get; set; }
 
+        public bool OptimizedCode { get; set; }
+
         public override bool Execute()
         {
             try
@@ -24,7 +26,7 @@ namespace Choffmeister.Advices.Weaver
 
                 using (FileStream input = File.Open(this.AssemblyPath, FileMode.Open))
                 {
-                    weavedAssembly = weaver.Weave(input, assemblyDirectories);
+                    weavedAssembly = weaver.Weave(input, assemblyDirectories, this.OptimizedCode);
                 }
 
                 using (FileStream output = File.Open(this.AssemblyPath, FileMode.Create))

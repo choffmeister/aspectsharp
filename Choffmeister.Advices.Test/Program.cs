@@ -43,7 +43,7 @@ namespace Choffmeister.Advices.Test
 
             using (FileStream input = Assembly.GetEntryAssembly().GetFile("Choffmeister.Advices.Test.exe"))
             {
-                assemblyDefinition = weaver.Weave(input, new string[0]);
+                assemblyDefinition = weaver.Weave(input, new string[0], false);
             }
 
             using (FileStream output = File.Open("WEAVED.exe", FileMode.Create))
