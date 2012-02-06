@@ -3,7 +3,7 @@
   <UsingTask AssemblyFile="$(MSBuildProjectDirectory)\..\Choffmeister.Advices.Weaver\bin\$(ConfigurationName)\Choffmeister.Advices.Weaver.dll" TaskName="ILWeaverBuildTask" />
 
   <Target Name="AfterBuild">
-    <ILWeaverBuildTask AssemblyPath="$(MSBuildProjectDirectory)\..\Choffmeister.Advices.Test\bin\$(ConfigurationName)\Choffmeister.Advices.Test.exe"
+    <ILWeaverBuildTask AssemblyPath="$(TargetPath)"
                        AssemblyDirectories="$(MSBuildProjectDirectory)\..\Choffmeister.Advices.Weaver\bin\$(ConfigurationName)" />
   </Target>
 </Project>
