@@ -49,6 +49,9 @@ namespace Choffmeister.Advices.Weaver
                 CustomAttribute attribute = markedMethod.Attribute;
                 TypeDefinition type = method.DeclaringType;
 
+                if (method.Name == ".ctor")
+                    throw new NotSupportedException("Decorating constructors with advices is not supported.");
+
                 TypeReference paraCollType = method.Module.Import(typeof(ParameterCollection));
                 MethodReference paraCollCtor = method.Module.Import(paraCollType.Resolve().Methods.Single(n => n.Name == ".ctor" && n.Parameters.Count == 0));
                 MethodReference paraCollAddMethod = method.Module.Import(paraCollType.Resolve().Methods.Single(n => n.Name == "Add"));
