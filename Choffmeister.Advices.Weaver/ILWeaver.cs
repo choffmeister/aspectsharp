@@ -138,7 +138,7 @@ namespace Choffmeister.Advices.Weaver
 
             // instantiate attribute
             List<Instruction> instructions = new List<Instruction>();
-            instructions.AddRange(attribute.ConstructorArguments.Select(n => n.Type.CreateLoadConstantInstruction(n.Value)));
+            instructions.AddRange(attribute.ConstructorArguments.SelectMany(n => n.Type.CreateLoadConstantInstruction(n.Value, module)));
             instructions.Add(Instruction.Create(OpCodes.Newobj, attributeCtor));
 
             // store attribute
@@ -151,7 +151,7 @@ namespace Choffmeister.Advices.Weaver
                 MethodReference setMethod = module.Import(attributeType.GetMethodDefinition(n => n.Name == "set_" + prop.Name));
 
                 instructions.Add(Instruction.Create(OpCodes.Ldloc, attributeLoc));
-                instructions.Add(prop.Argument.Type.CreateLoadConstantInstruction(prop.Argument.Value));
+                instructions.AddRange(prop.Argument.Type.CreateLoadConstantInstruction(prop.Argument.Value, module));
                 instructions.Add(Instruction.Create(OpCodes.Callvirt, setMethod));
             }
 
