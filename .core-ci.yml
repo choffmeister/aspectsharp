@@ -1,0 +1,5 @@
+machine: precise64-mono
+
+script: |
+  cd choffmeister/aspectsharp && ./tools/dependencies.py
+  cd choffmeister/aspectsharp && ./tools/tests.sh
