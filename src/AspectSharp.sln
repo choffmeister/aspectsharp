@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspectSharp.Advices", "AspectSharp.Advices\AspectSharp.Advices.csproj", "{E7BBBF7B-DAD3-44CE-BC32-F51CF0A22704}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspectSharp.Weaver", "AspectSharp.Weaver\AspectSharp.Weaver.csproj", "{43F22D77-FBE8-4366-9EE6-F5883175F8E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspectSharp.Tests", "AspectSharp.Tests\AspectSharp.Tests.csproj", "{26FBF94E-8AA7-43A7-B50C-FA9B091D4692}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspectSharp.TestsExecutable", "AspectSharp.TestsExecutable\AspectSharp.TestsExecutable.csproj", "{84A2A5A5-4FE2-4EB0-AE4F-32A3830D3DF6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26FBF94E-8AA7-43A7-B50C-FA9B091D4692}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26FBF94E-8AA7-43A7-B50C-FA9B091D4692}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26FBF94E-8AA7-43A7-B50C-FA9B091D4692}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26FBF94E-8AA7-43A7-B50C-FA9B091D4692}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43F22D77-FBE8-4366-9EE6-F5883175F8E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43F22D77-FBE8-4366-9EE6-F5883175F8E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43F22D77-FBE8-4366-9EE6-F5883175F8E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43F22D77-FBE8-4366-9EE6-F5883175F8E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84A2A5A5-4FE2-4EB0-AE4F-32A3830D3DF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84A2A5A5-4FE2-4EB0-AE4F-32A3830D3DF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84A2A5A5-4FE2-4EB0-AE4F-32A3830D3DF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84A2A5A5-4FE2-4EB0-AE4F-32A3830D3DF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7BBBF7B-DAD3-44CE-BC32-F51CF0A22704}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7BBBF7B-DAD3-44CE-BC32-F51CF0A22704}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7BBBF7B-DAD3-44CE-BC32-F51CF0A22704}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7BBBF7B-DAD3-44CE-BC32-F51CF0A22704}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = AspectSharp.Advices\AspectSharp.Advices.csproj
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = Hierarchical
+		$1.ResourceNamePolicy = FileFormatDefault
+	EndGlobalSection
+EndGlobal
