@@ -61,7 +61,7 @@ namespace AspectSharp.TestsExecutable
             Console.ResetColor();
 
             // invoke the intercepted method
-            object result = null;// dele.DynamicInvoke(parameters.AllParameterValues);
+            object result = dele.DynamicInvoke(parameters.AllParameterValues);
 
             Console.ForegroundColor = ConsoleColor.Green;
 
